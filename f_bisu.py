@@ -6,6 +6,8 @@ import pickle
 #levels of scale. Sort of a sophisticated version of "all things in moderation" with inspiration from CA's
 # Nature of Order textbooks
 
+#breaks with bad input, needs 7 days of data before use
+
 pkl = open('bisu.pkl', 'rb')
 data = pickle.load(pkl)
 
