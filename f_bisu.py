@@ -41,8 +41,8 @@ def what_do():
 			play : work+learn is 1 : 4
 			learn : work is 2 : 3'''
 	
-	work = ' - The Quinley House'
-	learn = ' - LYaH / Lua / Udacity'
+	work = ' - '
+	learn = ' - LYaH / ?'
 	play = ' - Play'
 	learn_hrs = float(sum([data[i][0] for i in range(-7, 0)]))
 	work_hrs = float(sum([data[i][1] for i in range(-7, 0)]))
