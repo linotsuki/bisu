@@ -1,12 +1,6 @@
 from sys import argv
-import pickle 
-
-#data structure is ['101020300', (learning, work, play, yes/no, short diary string), (day 2), (day 3) ...]
-#sort of a cross between a diary / self-improvement log that looks at time spent in the past to check for 
-#levels of scale. Sort of a sophisticated version of "all things in moderation" with inspiration from CA's
-# Nature of Order textbooks
-
-#breaks with bad input, needs 7 days of data before use
+import pickle
+import time
 
 pkl = open('bisu.pkl', 'rb')
 data = pickle.load(pkl)
@@ -68,6 +62,17 @@ def fitness():
 	key = {'0' : '  - Yoga', '1' : '  - Run and lift', '2' : '  - Run', '3' : '  - Climb'}
 	return key[data[0][0]]
 
+def picture(which):
+	''' "-p" concats and prints, "-d" diary strings'''
+	
+	print "\n" * 120
+	if which == "-p":
+		print ''.join(e[-2] for e in data[1:])
+	else:
+		for e in data[1:]:
+			print e[-1]	
+	print "\n" * 4
+
 def write():
 	'''gathers values then extends the list, handles the fitness seqence'''
 	
@@ -93,17 +98,6 @@ def write():
 	pickle.dump(data, output)
 	output.close()
 	print "\n\nDone. Now think~!"
-
-def picture(which):
-	''' "-p" concats and prints, "-d" diary strings'''
-	
-	print "\n" * 120
-	if which is "-p":
-		print ''.join(e[-2] for e in data[1:])
-	else:
-		for e in data[1:]:
-			print e[-1]	
-	print "\n" * 4
 
 mode()
 pkl.close()

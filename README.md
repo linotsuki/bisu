@@ -12,7 +12,7 @@ The second one ("-p" and "-d") reads information out from the file and prints it
 Lastly, it can write a new entry ("-w"). It does this by prompting for the values and then appending the file. This also tracks whether or not the fitness sequence moves forward or not, to allow for flexibility with training circumstances.
 
 
-I first wrote it in Python, then Haskell. Note that there's little to no error handling; this was because so far I'm the only one using it and I'm very careful to give it well-formed input.
+I first wrote it in Python, then Haskell. Note that there's little to no error handling; this was because so far I'm the only one using it and I'm very careful to give it well-formed input. Also, both require a well-formed file to read from---at least seven days of entries.
 
 Haskell data:
 --fit_sequence = "101020300"
@@ -21,4 +21,4 @@ Haskell data:
 Python:
 ['101020300', (learning, work, play, yes/no, short diary string), (day 2), (day 3) ...] 
 
-Next step, a GUI with tabs for the different modes.
+Next step, a GUI with tabs for the different modes :D
