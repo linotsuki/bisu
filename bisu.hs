@@ -1,86 +1,69 @@
-module Main
-    where
+{-# LANGUAGE UnicodeSyntax #-}
 import System.IO
-import Control.Monad (when)
+import qualified System.IO.Strict as S
+import Control.Monad
 import System.Environment (getArgs)
+import Data.List (inits)
 
---originally fit_sequence = "101020300"
---the_list = [(learning, work, play, yes/no, short diary string), (day 2), (day 3) ...] 
+type Entry = (Float, Float, Float, Char, String)
+type_it :: [String] -> [Entry]
+type_it = map read
 
 main = do
     args <- getArgs
-    fit_sequence <- readFile "sequence.txt"
-    file_string <- readFile "data.txt"
-    let the_list = map type_it $ lines file_string
+    fit_sequence <- S.readFile "sequence.txt"
+    file_string <- S.readFile "data.txt"
+    let the_list = type_it $ lines file_string
+        grades = [ x | (_, _, _, x, _) <- the_list ]
+        diary = [ x | (_, _, _, _, x) <- the_list ]
         arg = head args
-        output = case arg of
-            "-r" -> report fit_sequence the_list
-            "-w" -> "Time to write!\n"
-            "-p" -> picture arg the_list
-            "-d" -> picture arg the_list
-            _ -> error "Boom!!"
-    putStrLn output
-    
-    when ( output == "Time to write!\n" ) $ do
-        putStrLn "Learn: "
-        learn <- getLine
-        putStrLn "Work: "
-        work <- getLine
-        putStrLn "Play: "
-        play <- getLine
-        putStrLn "Lift? "
-        choice <- getLine
-        when ( choice == "yes" ) $ do
-            writeFile "sequence.txt" $ tail fit_sequence ++ [head fit_sequence] 
-        putStrLn "Honor? "
-        honor <- getLine
-        putStrLn "and? "
-        diary <- getLine
-        appendFile "list.txt" $ "("++learn", "++work ++ play ++ honor ++ diary ++ "\n"
+        clear = putStrLn $ replicate 120 '\n'
+        pad = putStrLn "\n\n\n\n\n\n"
+    case arg of
+      "-r" -> report fit_sequence the_list
+      "-w" -> write_entry fit_sequence
+      "-p" -> clear >> putStrLn grades >> pad
+      "-d" -> clear >> mapM_ putStrLn diary >> pad
+      _ -> error "Boom!!"
 
-type_it :: String -> (Float, Float, Float, Char, String)
-type_it = read 
+write_entry f_seq = do
+    let prompts = ["Learn: ", "Work: ", "Play: ", "Lift? ", "Grade? ", "and? "]
+        confirmations = (tail . inits) "yes"
+        progress (x:xs) = xs ++ [x]
+        format (l:w:p:_:g:d:[]) = concat $ "\n":"(":l:", ":w:", ":p:", \'":g:"\', \"":d:"\")":[]
+    replies <- mapM ( \x → putStr x >> getLine) prompts
+    when ((replies !! 3) `elem` confirmations) $ writeFile "sequence.txt" $ progress f_seq
+    appendFile "data.txt" $ format replies
 
-report :: String -> [(Float, Float, Float, Char, String)] -> String
-report fit the_list = "\n"++fast++"\nMost: "++most++"\nLittle: "++little++"\nLeast: "++least++"\nMove: "++activity++"\n"
-                where   (most, little, least) = what_do the_list
-                        activity = fitness fit
-                        fast = fasting $ length the_list
+report :: String -> [Entry] -> IO ()
+report fit list = mapM_ putStrLn 
+    ["",fast, "Most: " ++ most, "Little: " ++ little, "Least: " ++ least, "Move: " ++ activity]
+    where (most, little, least) = what_do list
+          activity = fitness fit
+          fast = fasting $ length list
 
-what_do :: [(Float, Float, Float, Char, String)] -> (String, String, String)
-what_do the_list =  if play_hrs / non_play >= 0.25 
-                    then if learn_hrs / work_hrs >= 0.66
-                         then (work, learn, play)
-                         else (learn, work, play)
-                    else if learn_hrs / work_hrs >= 0.66
-                         then (play, work, learn)
-                         else (play, learn, work)
-                    where work = " - Job Hunt"
-                          learn = " - LYaH / ?"
-                          play = " - Play"
-                          non_play = learn_hrs + work_hrs
-                          learn_hrs = sum [ x | (x, _, _) <- portion ]
-                          work_hrs = sum [ x | (_, x, _) <- portion ]
-                          play_hrs = sum [ x | (_, _, x) <- portion ]
-                          portion = [ (a, b, c) | (a, b, c, _, _) <- take 7 $ reverse the_list ]
+what_do :: [Entry] -> (String, String, String)
+what_do list 
+    | too_little_work = (work, learn, play)
+    | too_much_play   = (learn, work, play)
+    | too_much_study  = (play, work, learn)
+    | otherwise     = (play, learn, work)
+    where too_little_work = too_much_play && too_much_study
+          too_much_play = play_hours / (learn_hours + work_hours) >= 0.25
+          too_much_study = (learn_hours) / (work_hours) >= 0.66
 
-fitness :: String -> String
-fitness fit_seq
-    | x == '0' = "  - Yoga"
-    | x == '1' = "  - Run and Lift"
-    | x == '2' = "  - Run"
-    | x == '3' = "  - Climb"
-    where x = head fit_seq 
+          (work, learn, play) = (" - Job Hunt", " - LYaH / ?", " - Play")
+          (learn_hours, work_hours, play_hours) = tri_sum list
+           where tri_sum = foldl (\acc (a,b,c,_,_) → tri_add acc (a,b,c) ) (0, 0, 0) . take 7 . reverse
+                 tri_add (a,b,c) (x,y,z) = (a+x, b+y, c+z)
 
-fasting :: Int -> String
-fasting x 
-    | x `mod` 76 == 0 = "\nFull Day Fast"
-    | x `mod` 21 == 0 = "\nPartial Fast"
-    | otherwise   = ""
+fasting x
+    | x `mod` 76 == 0 = "Full Day Fast"
+    | x `mod` 21 == 0 = "Partial Fast"
+    | otherwise = ""
 
-picture :: String -> [(Float, Float, Float, Char, String)] -> String
-picture "-p" the_list = newlines 120 ++ [ x | (_, _, _, x, _) <- the_list ] ++ newlines 6
-picture "-d" the_list = newlines 120 ++ concat [ x ++ "\n" | (_, _, _, _, x) <- the_list ] ++ newlines 6
-
-newlines :: Int -> String
-newlines x = replicate x '\n'
+fitness (x:xs)
+    | x == '0' = " - Yoga"
+    | x == '1' = " - Run and Lift"
+    | x == '2' = " - Run"
+    | x == '3' = " - Climb"
