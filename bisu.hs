@@ -1,4 +1,3 @@
-{-# LANGUAGE UnicodeSyntax #-}
 import System.IO
 import qualified System.IO.Strict as S
 import Control.Monad
@@ -17,8 +16,8 @@ main = do
         grades = [ x | (_, _, _, x, _) <- the_list ]
         diary = [ x | (_, _, _, _, x) <- the_list ]
         arg = head args
-        clear = putStrLn $ replicate 120 '\n'
-        pad = putStrLn "\n\n\n\n\n\n"
+        clear = putStrLn "\ESC[2J"
+        pad = putStrLn "\n\n\n\n"
     case arg of
       "-r" -> report fit_sequence the_list
       "-w" -> write_entry fit_sequence
@@ -31,9 +30,9 @@ write_entry f_seq = do
         confirmations = (tail . inits) "yes"
         progress (x:xs) = xs ++ [x]
         format (l:w:p:_:g:d:[]) = concat $ "\n":"(":l:", ":w:", ":p:", \'":g:"\', \"":d:"\")":[]
-    replies <- mapM ( \x → putStr x >> getLine) prompts
-    when ((replies !! 3) `elem` confirmations) $ writeFile "sequence.txt" $ progress f_seq
-    appendFile "data.txt" $ format replies
+    new_entry_data <- mapM ( \x -> putStr x >> hFlush stdout >> getLine) prompts
+    when ((new_entry_data !! 3) `elem` confirmations) $ writeFile "sequence.txt" $ progress f_seq
+    appendFile "data.txt" $ format new_entry_data
 
 report :: String -> [Entry] -> IO ()
 report fit list = mapM_ putStrLn 
@@ -54,7 +53,7 @@ what_do list
 
           (work, learn, play) = (" - Job Hunt", " - LYaH / ?", " - Play")
           (learn_hours, work_hours, play_hours) = tri_sum list
-           where tri_sum = foldl (\acc (a,b,c,_,_) → tri_add acc (a,b,c) ) (0, 0, 0) . take 7 . reverse
+           where tri_sum = foldl ( \acc (a,b,c,_,_) -> tri_add acc (a,b,c) ) (0, 0, 0) . take 7 . reverse
                  tri_add (a,b,c) (x,y,z) = (a+x, b+y, c+z)
 
 fasting x
