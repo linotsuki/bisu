@@ -1,24 +1,17 @@
 bisu
 ====
 
-planning app, named after the pro sc player Bisu.
+planning/diary/motivation app, named after broodwar pro bisu. 
 
-Generally it has three branches:
+It's used to keep proportion between work/learning/play going back seven days (easily adjustable)---the levels of scale idea is taken from the Christopher Alexander's Nature of Order textbooks. 
 
-The first one ("-r") looks at the past seven days, as well where the day is in the timeline, and sorts some strings of importance such that, should the program be followed, time spent will have levels of scale in the distribution. It also reads out from a fitness sequence.
+It also keeps track for periodic fasting and is a database for diary entries. The grade values are based on Seinfeld's "Don't break the chain."
 
-The second one ("-p" and "-d") reads information out from the file and prints it accordingly. Currently the good/bad for the day, and the diary strings.
+Not using a date-entry key-value structure is on purpose. Further comments are in the file.
 
-Lastly, it can write a new entry ("-w"). It does this by prompting for the values and then appending the file. This also tracks whether or not the fitness sequence moves forward or not, to allow for flexibility with training circumstances.
+It runs in a terminal and is meant to run indefinitely (looking forward to designing a simple gui once library support is more solid). Tracking of time is simplistic in that passage of time is tracked by number of entries.  
 
+It requires a well-formed file to read from---at least seven days of entries.
 
-I first wrote it in Python, then Haskell. Note that there's little to no error handling; this was because so far I'm the only one using it and I'm very careful to give it well-formed input. Also, both require a well-formed file to read from---at least seven days of entries.
-
-Haskell data:
---fit_sequence = "101020300"
---the_list = [(learning, work, play, yes/no, short diary string), (day 2), (day 3) ...]
-
-Python:
-['101020300', (learning, work, play, yes/no, short diary string), (day 2), (day 3) ...] 
-
-Next step, a GUI with tabs for the different modes :D
+sequence.txt = "101020300"
+data.txt = [(learning, work, play, O/X, short diary string), (day 2), (day 3) ...]
